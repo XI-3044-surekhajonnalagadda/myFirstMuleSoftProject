@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="25f14f1e-8d68-4f23-ab3f-9911d2959c20" >
+		<http:listener-connection host="0.0.0.0" port="8083" />
+	</http:listener-config>
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="ed59bcba-ebe4-47f5-a4b2-ee6a68437750" >
+		<db:my-sql-connection host="localhost" port="3306" user="root" password="Sansak@1706" database="surekha" />
+	</db:config>
+	<http:listener-config name="HTTP_Listener_config1" doc:name="HTTP Listener config" doc:id="e1fe5f32-b059-47f2-833f-403bbefb9022" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<flow name="databaseFlow" doc:id="9e32ab10-fcaf-4e16-a854-13d06e8b03ab" >
+		<http:listener doc:name="Listener" doc:id="badcd3c2-7908-4784-a2fb-f17d74444eb0" config-ref="HTTP_Listener_config" path="/test"/>
+		<db:insert doc:name="Insert" doc:id="d684fa97-8249-4564-8275-185284a5e08e" config-ref="Database_Config">
+			<db:sql ><![CDATA[insert into training(id,name,occupation,age)
+values(:id,:name,:occupation,:age)]]></db:sql>
+			<db:input-parameters ><![CDATA[#[attributes.queryParams]]]></db:input-parameters>
+		</db:insert>
+		<ee:transform doc:name="Transform Message" doc:id="4f287297-7b21-4fcb-8644-73e6096f3e3f" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="112c4b91-29cc-416f-a83e-3901fe116594" message="success"/>
+	</flow>
+	<flow name="databaseFlow1" doc:id="e424d925-48eb-4e63-8799-6d3946da8ff2">
+		<http:listener doc:name="Listener" doc:id="04571742-8646-4327-8f5f-86394e26bd06" config-ref="HTTP_Listener_config1" path="/test1" />
+		<db:select doc:name="Select" doc:id="17f27adf-1524-4316-9db2-d41a452b2993" config-ref="Database_Config">
+			<db:sql><![CDATA[select * from training where occupation = :enter like]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	enter : attributes.queryParams.enter
+}]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="f27837e1-3d5f-476a-b1fd-bf51eb982ffb" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="a1446a24-cb67-41ce-965e-57f35d1b93e5" />
+	</flow>
+	<flow name="databaseFlow2" doc:id="533aab32-8e22-4ba4-9db4-0a58037d2751" >
+		<http:listener doc:name="Listener" doc:id="fe39c5f5-d211-4dfc-b5aa-f475ba9b707f" config-ref="HTTP_Listener_config1" path="/bulkinsert"/>
+		<ee:transform doc:name="Transform Message" doc:id="02391746-5d72-4811-946d-213b5f5bad60" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload map ( payload01 , indexOfPayload01 ) -> {
+ "id" : payload01.id,
+ "name": payload01.name,
+ "occupation" : payload01.occupation,
+ "age": payload01.age
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<db:bulk-insert doc:name="Bulk insert" doc:id="1e76e4fa-accc-46f5-924e-f77c5c16bb57" config-ref="Database_Config">
+			<db:sql ><![CDATA[insert into training(id,name,occupation,age)
+values(:id,:name,:occupation,:age)]]></db:sql>
+		</db:bulk-insert>
+		<ee:transform doc:name="Transform Message" doc:id="5df14ed7-2a23-4727-8bc9-08f00948dc69" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>
