@@ -1,0 +1,25 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<types:mule xmlns:types="http://www.mulesoft.org/schema/mule/types">
+  <types:catalog>
+    <types:type name="data" format="json">
+      <types:shape format="weave" example="examples/data.json"><![CDATA[%dw 2.0
+
+type data = Array<{|  id: String,   name: String,   occupation: String,   age: String|}> {"example": "[{\\\"id\\\":\\\"45\\\",\\\"name\\\":\\\"sanchi\\\",\\\"occupation\\\":\\\"engg\\\",\\\"age\\\":\\\"85\\\"},{\\\"id\\\":\\\"56\\\",\\\"name\\\":\\\"saurabh\\\",\\\"occupation\\\":\\\"engg\\\",\\\"age\\\":\\\"85\\\"},{\\\"id\\\":\\\"60\\\",\\\"name\\\":\\\"dhur\\\",\\\"occupation\\\":\\\"engg\\\",\\\"age\\\":\\\"85\\\"},{\\\"id\\\":\\\"98\\\",\\\"name\\\":\\\"24tgg\\\",\\\"occupation\\\":\\\"engg\\\",\\\"age\\\":\\\"85\\\"}]"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="new" format="java">
+      <types:shape format="raml"><![CDATA[#%RAML 1.0 DataType
+type: string]]></types:shape>
+    </types:type>
+  </types:catalog>
+  <types:enrichment select="#fe39c5f5-d211-4dfc-b5aa-f475ba9b707f">
+    <types:processor-declaration>
+      <types:output-event>
+        <types:message>
+          <types:payload type="data"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+</types:mule>
